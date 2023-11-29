@@ -1,6 +1,10 @@
 package com.demo.app.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,8 +20,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.demo.app.Model.Admin;
+import com.demo.app.Model.Userdata;
 import com.demo.app.Repository.webappRepository;
 import com.demo.app.configuration.CustomCookie;
 import com.demo.app.configuration.ResponsePayload;
@@ -37,7 +43,6 @@ public class webappController {
 		
 		try {
 			CustomCookie.setCookieOption(request.getSession().getId(), response);
-//			response.setHeader(CONT, null);
 			return new ResponsePayload("Admin details recived successfully.",
 					webapprepo.getAdminData(),HttpStatus.OK,true) ;
 			} catch (ServiceException e) {
@@ -72,6 +77,50 @@ public class webappController {
 		}
 	return null;
 	}
+	
+	
+	@PostMapping(value = "uploadCV")
+    public ResponsePayload uploadCv(@RequestParam(value = "file") MultipartFile file, HttpServletRequest request,HttpServletResponse response) throws IOException {
+	
+	try {
+		CustomCookie.setCookieOption(request.getSession().getId(), response);
+//		response.setHeader("Content-Type", "nosniff");
+//		response.setHeader("accept", "*/*");
+		webapprepo.uploadCv(null,file);
+		
+		return new ResponsePayload("Admin details added successfully.") ;
+		} catch (ServiceException e) {
+			System.out.println(e);
+		}
+	return null;
+	}
+	
+	
+	@GetMapping(value = "getuserData")
+	public ResponsePayload getUserData(HttpServletRequest request,HttpServletResponse response) {
+		
+		try {
+			CustomCookie.setCookieOption(request.getSession().getId(), response);
+			
+			List<Userdata> ud = webapprepo.getUserData();
+			   Userdata u = new Userdata();
+		
+			u = ud.get(0);
+			  File f = new File(u.getFilename());
+				try (FileOutputStream fos = new FileOutputStream(f.getAbsolutePath())) {
+				    fos.write(u.getResume());
+				} catch (IOException ioe) {
+				    ioe.printStackTrace();
+				}
+			return new ResponsePayload("userdata details recived successfully.",
+					webapprepo.getUserData(),HttpStatus.OK,true) ;
+			
+			} catch (ServiceException e) {
+				System.out.println(e);
+			}
+		return null;
+		}
+	
 }
 	
 	
